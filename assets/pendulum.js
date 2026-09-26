@@ -15,6 +15,8 @@ const Pendulum = (() => {
   const TILT_SPRING = 160; // how firmly the charm lines up with the string
   const TILT_DAMPING = 14; // how quickly its wobble settles
   const MAX_STRETCH = 1.75; // the string never gets longer than this
+  const HAND = 700; // how firmly a held charm follows the hand (s⁻²)
+  const HAND_DAMPING = 2 * Math.sqrt(700); // critically damped: follows softly, never overshoots
   const SUBSTEP = 1 / 240;
 
   function create(length) {
@@ -27,6 +29,7 @@ const Pendulum = (() => {
       tilt: 0, // charm tilt (follows th)
       vt: 0,
       held: false,
+      target: null, // where the hand wants the charm: { th, r }
     };
   }
 
@@ -34,7 +37,15 @@ const Pendulum = (() => {
     const n = Math.max(1, Math.ceil(dt / SUBSTEP));
     const h = dt / n;
     for (let i = 0; i < n; i++) {
-      if (!p.held) {
+      if (p.held && p.target) {
+        // The charm follows the hand through a soft spring, so uneven
+        // mouse or finger updates still give an even glide, and letting go
+        // hands over a natural speed.
+        p.w += (HAND * (p.target.th - p.th) - HAND_DAMPING * p.w) * h;
+        p.vr += (HAND * (p.target.r - p.r) - HAND_DAMPING * p.vr) * h;
+        p.th += p.w * h;
+        p.r += p.vr * h;
+      } else if (!p.held) {
         // A string only pulls; when slack, the charm simply falls.
         const stretch = p.r - p.L;
         const spring = stretch > 0 ? -SPRING * stretch - STRETCH_DAMPING * p.vr : -0.5 * p.vr;
@@ -73,6 +84,9 @@ if (typeof document !== "undefined") {
   (() => {
     const stage = document.getElementById("stage");
     const ropePath = document.getElementById("rope");
+    // The image includes the charm's shadow: extra room on the sides and
+    // below. These are its proportions (see assets/murugan.webp).
+    const IMG = { width: 588, figure: 516, figureHeight: 520 };
     const charm = document.getElementById("charm");
     const glow = document.getElementById("glow");
     const hint = document.getElementById("hint");
@@ -81,6 +95,64 @@ if (typeof document !== "undefined") {
     const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
     let p = null;
+
+    // The cord: a chain of points hanging between the top of the screen and
+    // the charm. The charm's motion comes from the smooth string above; the
+    // points only follow it, so the cord bends, trails and whips like the
+    // app's rope without ever making the charm jitter.
+    const LINKS = 12;
+    let chain = [];
+    function buildChain() {
+      const t = tip();
+      chain = [];
+      for (let i = 0; i <= LINKS; i++) {
+        const f = i / LINKS;
+        const x = anchor.x + (t.x - anchor.x) * f;
+        const y = anchor.y + (t.y - anchor.y) * f;
+        chain.push({ x, y, px: x, py: y });
+      }
+    }
+    function stepChain(dt) {
+      const n = Math.max(1, Math.ceil(dt / (1 / 120)));
+      const h = dt / n;
+      const g = 2400 * h * h;
+      const t = tip();
+      // A touch longer than the gap, so the cord keeps a little life in it.
+      const rest = Math.max(p.r, p.L * 1.04) / LINKS;
+      for (let k = 0; k < n; k++) {
+        for (let i = 1; i < LINKS; i++) {
+          const c = chain[i];
+          const vx = (c.x - c.px) * 0.985;
+          const vy = (c.y - c.py) * 0.985;
+          c.px = c.x;
+          c.py = c.y;
+          c.x += vx;
+          c.y += vy + g;
+        }
+        chain[0].x = anchor.x;
+        chain[0].y = anchor.y;
+        chain[LINKS].x = t.x;
+        chain[LINKS].y = t.y;
+        for (let it = 0; it < 10; it++) {
+          for (let i = 0; i < LINKS; i++) {
+            const a = chain[i];
+            const b = chain[i + 1];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const d = Math.hypot(dx, dy) || 1e-4;
+            if (d <= rest) continue; // a cord goes slack, it never pushes
+            const wa = i === 0 ? 0 : 1;
+            const wb = i + 1 === LINKS ? 0 : 1;
+            if (wa + wb === 0) continue;
+            const c = ((d - rest) / d) / (wa + wb);
+            a.x += dx * c * wa;
+            a.y += dy * c * wa;
+            b.x -= dx * c * wb;
+            b.y -= dy * c * wb;
+          }
+        }
+      }
+    }
     let anchor = { x: 0, y: -2 };
     let charmW = 0;
     let charmH = 0;
@@ -107,8 +179,8 @@ if (typeof document !== "undefined") {
         length = clamp((vh * 0.28) / 1.12, 115, 250);
         anchor = { x: vw * 0.72, y: -2 };
       }
-      charm.style.width = `${charmW}px`;
-      charmH = charm.naturalWidth ? (charm.naturalHeight / charm.naturalWidth) * charmW : charmW;
+      charm.style.width = `${(charmW * IMG.width) / IMG.figure}px`;
+      charmH = (charmW * IMG.figureHeight) / IMG.figure;
       glow.style.width = glow.style.height = `${charmW * 1.6}px`;
       if (!p) {
         p = Pendulum.create(length);
@@ -130,15 +202,14 @@ if (typeof document !== "undefined") {
 
     function draw() {
       const t = tip();
-      // A taut string is straight; a slack one sags a little.
-      const slack = Math.max(0, p.L - p.r);
-      if (slack > 0.5) {
-        const mx = (anchor.x + t.x) / 2;
-        const my = (anchor.y + t.y) / 2 + slack * 0.7;
-        ropePath.setAttribute("d", `M${anchor.x.toFixed(1)} ${anchor.y.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${t.x.toFixed(1)} ${t.y.toFixed(1)}`);
-      } else {
-        ropePath.setAttribute("d", `M${anchor.x.toFixed(1)} ${anchor.y.toFixed(1)} L${t.x.toFixed(1)} ${t.y.toFixed(1)}`);
+      let d = `M${chain[0].x.toFixed(1)} ${chain[0].y.toFixed(1)}`;
+      for (let i = 1; i < LINKS; i++) {
+        const mx = (chain[i].x + chain[i + 1].x) / 2;
+        const my = (chain[i].y + chain[i + 1].y) / 2;
+        d += ` Q${chain[i].x.toFixed(1)} ${chain[i].y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
       }
+      d += ` L${t.x.toFixed(1)} ${t.y.toFixed(1)}`;
+      ropePath.setAttribute("d", d);
       const a = -p.tilt; // CSS turns clockwise
       charm.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%, -3px) rotate(${a}rad)`;
       const cx = t.x - Math.sin(a) * charmH * 0.5;
@@ -171,9 +242,12 @@ if (typeof document !== "undefined") {
       last = now;
       air();
       if (!reduce.matches || drag) Pendulum.step(p, dt);
+      stepChain(dt);
       flash = Math.max(0, flash - dt * 1.3);
       draw();
-      quiet = !drag && Pendulum.energy(p) < 0.004 && flash === 0 ? quiet + 1 : 0;
+      let cordMotion = 0;
+      for (const c of chain) cordMotion = Math.max(cordMotion, Math.abs(c.x - c.px) + Math.abs(c.y - c.py));
+      quiet = !drag && Pendulum.energy(p) < 0.004 && cordMotion < 0.02 && flash === 0 ? quiet + 1 : 0;
       if (quiet > 30 || document.hidden) {
         running = false;
         scheduleGust();
@@ -245,10 +319,11 @@ if (typeof document !== "undefined") {
       hint.style.opacity = "0";
       const q = local(ev);
       const t = tip();
-      drag = { id: ev.pointerId, ox: t.x - q.x, oy: t.y - q.y, sx: ev.clientX, sy: ev.clientY, t0: performance.now(), moved: 0, samples: [] };
+      drag = { id: ev.pointerId, ox: t.x - q.x, oy: t.y - q.y, sx: ev.clientX, sy: ev.clientY, t0: performance.now(), moved: 0 };
       if (ALLOW_PULL) {
         charm.classList.add("dragging");
         p.held = true;
+        p.target = { th: p.th, r: p.r };
       }
       wake();
     });
@@ -260,32 +335,21 @@ if (typeof document !== "undefined") {
       const q = local(ev);
       const x = q.x + drag.ox - anchor.x;
       const y = Math.max(8, q.y + drag.oy - anchor.y);
-      const now = performance.now();
-      const th = Math.atan2(x, y);
-      const r = clamp(Math.hypot(x, y), p.L * 0.35, p.L * Pendulum.MAX_STRETCH);
-      drag.samples.push({ t: now, th, r });
-      while (drag.samples.length > 1 && now - drag.samples[0].t > 90) drag.samples.shift();
-      p.th = th;
-      p.r = r;
+      p.target = {
+        th: Math.atan2(x, y),
+        r: clamp(Math.hypot(x, y), p.L * 0.35, p.L * Pendulum.MAX_STRETCH),
+      };
     });
 
     const release = (ev) => {
       if (!drag || ev.pointerId !== drag.id) return;
       const tap = drag.moved < 8 && performance.now() - drag.t0 < 350;
-      // Carry the hand's speed over the last moment into the swing.
-      const s = drag.samples;
-      if (!tap && s.length > 1) {
-        const a = s[0];
-        const b = s[s.length - 1];
-        const dt = Math.max((b.t - a.t) / 1000, 0.016);
-        p.w = clamp((b.th - a.th) / dt, -6, 6);
-        p.vr = clamp((b.r - a.r) / dt, -1500, 1500);
-      } else if (!tap) {
-        p.w = 0;
-        p.vr = 0;
-      }
+      // The soft spring already carries the hand's speed; keep it sensible.
+      p.w = clamp(p.w, -6, 6);
+      p.vr = clamp(p.vr, -1500, 1500);
       drag = null;
       p.held = false;
+      p.target = null;
       charm.classList.remove("dragging");
       if (tap) bless();
       else wake();
@@ -326,12 +390,14 @@ if (typeof document !== "undefined") {
     });
     window.addEventListener("resize", () => {
       measure();
+      buildChain();
       draw();
       wake();
     });
 
     const start = () => {
       measure();
+      buildChain();
       draw();
       wake();
     };

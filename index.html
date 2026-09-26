@@ -89,7 +89,7 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(255, 196, 92, 0.5) 0%, rgba(255, 196, 92, 0) 65%);
       pointer-events: none;
-      will-change: transform;
+      will-change: transform, opacity;
     }
     .charm {
       pointer-events: auto;
@@ -103,8 +103,7 @@
       -webkit-user-drag: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
-      filter: drop-shadow(0 14px 18px rgba(80, 45, 10, 0.22));
-      will-change: transform;
+      will-change: transform; /* its shadow is part of the image */
     }
     .charm.dragging { cursor: grabbing; }
     .spark {
@@ -140,33 +139,46 @@
     .brand { display: flex; flex-direction: column; gap: 0.15rem; }
     .brand-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
     .brand-name {
+      --brand-size: clamp(2.4rem, 5vw, 3.4rem);
       font-family: "Baloo 2", "Segoe UI", sans-serif;
       font-weight: 800;
-      font-size: clamp(2.4rem, 5vw, 3.4rem);
+      font-size: var(--brand-size);
+      white-space: nowrap;
       line-height: 1;
       letter-spacing: -0.02em;
       color: var(--saffron);
     }
     .brand-by { font-weight: 700; font-size: 1rem; color: var(--muted); }
     .brand-by b { color: var(--saffron); }
+    /* "Coming soon" sits right after the o of Danglio: the same height as
+       that o (0.51 of the font size in Baloo 2) and on the same baseline. */
     .tag {
-      display: inline-flex;
-      align-self: flex-start;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 0;
-      padding: 0.4rem 0.85rem;
+      display: inline-block;
+      overflow: hidden; /* makes its bottom edge sit on the text baseline */
+      vertical-align: baseline;
+      height: calc(var(--brand-size) * 0.51);
+      line-height: calc(var(--brand-size) * 0.51);
+      margin-left: calc(var(--brand-size) * 0.16);
+      padding: 0 0.6rem;
       border-radius: 999px;
       background: #fff;
-      box-shadow: 0 2px 10px rgba(120, 70, 20, 0.08);
+      box-shadow: 0 1px 6px rgba(120, 70, 20, 0.12);
+      font-family: "Nunito Sans", "Segoe UI", sans-serif;
+      font-size: 0.72rem;
       font-weight: 700;
-      font-size: 0.9rem;
+      letter-spacing: 0.01em;
       color: var(--peacock);
+      white-space: nowrap;
     }
     .tag::before {
       content: "";
-      width: 8px;
-      height: 8px;
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
       border-radius: 50%;
       background: var(--peacock);
       animation: pulse 1.6s ease-in-out infinite;
@@ -235,8 +247,7 @@
     <section class="copy">
       <div class="brand">
         <div class="brand-row">
-          <span class="brand-name">Danglio</span>
-          <span class="tag">Coming soon</span>
+          <span class="brand-name">Danglio<span class="tag">Coming soon</span></span>
         </div>
         <span class="brand-by">by install<b>n</b>go</span>
       </div>
@@ -253,7 +264,7 @@
   </div>
 
   <section class="stage" id="stage" aria-label="A charm hanging from the top of the screen. Pull it and let go, or tap it.">
-    <svg class="rope-svg" id="ropeSvg" aria-hidden="true"><path id="rope" d=""></path></svg>
+    <svg class="rope-svg" aria-hidden="true"><path id="rope" d=""></path></svg>
     <div class="glow" id="glow" aria-hidden="true"></div>
     <img class="charm" id="charm" src="/assets/murugan.webp" alt="Little Murugan charm" draggable="false">
     <p class="hint" id="hint">Pull it and let go</p>
