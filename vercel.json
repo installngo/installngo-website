@@ -1,7 +1,11 @@
 {
   "cleanUrls": true,
   "redirects": [
-    { "source": "/:path+", "destination": "/", "permanent": false }
+    { "source": "/danglio", "destination": "/", "permanent": false },
+    { "source": "/dangle", "destination": "/", "permanent": false },
+    { "source": "/terms", "destination": "/", "permanent": false },
+    { "source": "/privacy", "destination": "/", "permanent": false },
+    { "source": "/refunds", "destination": "/", "permanent": false }
   ],
   "headers": [
     {
@@ -11,6 +15,10 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "X-Frame-Options", "value": "DENY" }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
     }
   ]
 }

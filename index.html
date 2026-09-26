@@ -3,127 +3,252 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>installngo — coming soon</title>
-  <meta name="description" content="installngo is launching soon. Follow us on Instagram and YouTube.">
-  <meta property="og:title" content="installngo — coming soon">
-  <meta property="og:description" content="Something new is on its way. Follow us on Instagram and YouTube.">
+  <title>Danglio by installngo — something is dangling…</title>
+  <meta name="description" content="Danglio: a little companion that dangles from the top of your screen. Pull it, flick it, let it go. Coming soon from installngo.">
+  <meta name="theme-color" content="#FFF4E6">
+
+  <!-- Link preview for WhatsApp, Instagram, Facebook and others -->
   <meta property="og:type" content="website">
+  <meta property="og:site_name" content="installngo">
+  <meta property="og:title" content="Danglio — something is dangling… 👀">
+  <meta property="og:description" content="Pull it, flick it, let it go. Danglio is coming soon from installngo.">
   <meta property="og:url" content="https://www.installngo.com/">
+  <meta property="og:image" content="https://www.installngo.com/assets/share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.installngo.com/assets/share.jpg">
+
+  <link rel="preload" as="image" href="/assets/murugan.webp">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #0b1a33;
-      --text: #f4f6fa;
-      --muted: #a9b4c6;
-      --accent: #e9a21b;
-      --line: rgba(255, 255, 255, 0.18);
+      --cream: #fff8ee;
+      --peach: #ffe6cf;
+      --ink: #20263d;
+      --muted: #5b6179;
+      --saffron: #f39c12;
+      --marigold: #ffb935;
+      --peacock: #0e8a74;
+      --rope: #b9782b;
+      --card: #ffffff;
     }
     * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
+    html, body { margin: 0; }
     body {
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-      background: var(--ink);
-      color: var(--text);
-      font-family: "Schibsted Grotesk", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--ink);
+      font-family: "Nunito Sans", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(60rem 36rem at 78% 18%, #ffe0bd 0%, transparent 60%),
+        radial-gradient(40rem 30rem at 8% 92%, #dff4ee 0%, transparent 60%),
+        var(--cream);
       -webkit-font-smoothing: antialiased;
-      padding: env(safe-area-inset-top, 0) 0 env(safe-area-inset-bottom, 0);
+      overflow-x: hidden;
     }
-    main {
-      flex: 1;
+    .page {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      min-height: 100vh;
+      min-height: 100dvh;
+      width: min(100%, 1180px);
+      margin-inline: auto;
+      padding: 0 clamp(1.25rem, 4vw, 3rem);
+    }
+
+    /* The charm's stage: the cord hangs from the very top of the screen */
+    .stage {
+      position: relative;
+      order: 2;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    .rope-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .rope-svg path {
+      fill: none;
+      stroke: var(--rope);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .glow {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 196, 92, 0.5) 0%, rgba(255, 196, 92, 0) 65%);
+      pointer-events: none;
+      will-change: transform;
+    }
+    .charm {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: var(--charm-size, 280px);
+      transform-origin: 50% 0;
+      cursor: grab;
+      touch-action: none;
+      -webkit-user-drag: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      filter: drop-shadow(0 14px 18px rgba(80, 45, 10, 0.22));
+      will-change: transform;
+    }
+    .charm.dragging { cursor: grabbing; }
+    .spark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--marigold);
+      box-shadow: 0 0 8px rgba(255, 185, 53, 0.9);
+      pointer-events: none;
+    }
+    .hint {
+      position: absolute;
+      left: 50%;
+      bottom: 1.5rem;
+      margin: 0;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--muted);
+      pointer-events: none;
+      transition: opacity 300ms ease-out;
+    }
+
+    /* The words */
+    .copy {
+      order: 1;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      width: min(100% - 3rem, 960px);
-      margin-inline: auto;
-      padding-block: 4rem;
+      padding-block: 3rem 4rem;
     }
-    .brand {
-      font-weight: 700;
-      font-size: 1.25rem;
+    .brand { display: flex; flex-direction: column; gap: 0.15rem; }
+    .brand-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
+    .brand-name {
+      font-family: "Baloo 2", "Segoe UI", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 5vw, 3.4rem);
+      line-height: 1;
       letter-spacing: -0.02em;
+      color: var(--saffron);
     }
-    .brand .dot { color: var(--accent); }
-    .label {
-      margin: clamp(3rem, 10vh, 6rem) 0 1rem;
-      color: var(--accent);
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      font-size: 0.95rem;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(2.6rem, 8vw, 5.5rem);
-      line-height: 1.02;
-      letter-spacing: -0.045em;
-      font-weight: 700;
-      max-width: 12ch;
-    }
-    .lead {
-      margin: 1.5rem 0 0;
-      color: var(--muted);
-      font-size: clamp(1.05rem, 2vw, 1.3rem);
-      line-height: 1.55;
-      max-width: 40ch;
-    }
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 2.5rem;
-    }
-    .links a {
+    .brand-by { font-weight: 700; font-size: 1rem; color: var(--muted); }
+    .brand-by b { color: var(--saffron); }
+    .tag {
       display: inline-flex;
+      align-self: flex-start;
       align-items: center;
       gap: 0.5rem;
-      min-height: 48px;
-      padding: 0 1.4rem;
-      border: 1px solid var(--line);
+      margin: 0;
+      padding: 0.4rem 0.85rem;
       border-radius: 999px;
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 1rem;
-      transition: border-color 150ms ease-out, background 150ms ease-out;
-    }
-    .links a:hover { border-color: var(--text); background: rgba(255, 255, 255, 0.06); }
-    .links a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-    footer {
-      width: min(100% - 3rem, 960px);
-      margin-inline: auto;
-      padding: 1.5rem 0 2rem;
-      border-top: 1px solid var(--line);
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 0.75rem;
-      color: var(--muted);
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(120, 70, 20, 0.08);
+      font-weight: 700;
       font-size: 0.9rem;
+      color: var(--peacock);
+    }
+    .tag::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--peacock);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { opacity: 0.25; } }
+    h1 {
+      margin: clamp(1.75rem, 6vh, 3.5rem) 0 0;
+      font-family: "Baloo 2", "Segoe UI", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.1rem, 4.8vw, 3.8rem);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      max-width: 14ch;
+    }
+    h1 span { color: var(--saffron); }
+    .lead {
+      margin: 1.1rem 0 0;
+      font-family: "Fraunces", Georgia, "Times New Roman", serif;
+      font-style: italic;
+      font-weight: 400;
+      font-size: clamp(0.98rem, 1.35vw, 1.12rem);
+      line-height: 1.65;
+      color: var(--muted);
+      max-width: 36ch;
+    }
+    .follow {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.2rem;
+      margin: 1.8rem 0 0;
+      font-weight: 700;
+      color: var(--muted);
+    }
+    .follow a { color: var(--ink); text-decoration-color: var(--saffron); text-underline-offset: 4px; text-decoration-thickness: 2px; }
+    footer {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
     }
     footer a { color: var(--muted); }
-    footer a:hover { color: var(--text); }
+
+    /* Phones and narrow screens: charm on top, words underneath */
+    @media (max-width: 820px) {
+      .page { grid-template-columns: 1fr; }
+      .stage { order: 1; min-height: 0; height: min(64vh, 560px); height: min(64dvh, 560px); }
+      .copy { order: 2; padding-block: 0.5rem 2.5rem; }
+      h1 { margin-top: 1.25rem; }
+      .hint { bottom: 0.5rem; font-size: 0.85rem; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .tag::before { animation: none; }
+    }
   </style>
 </head>
 <body>
-  <main>
-    <div class="brand">install<span class="dot">n</span>go</div>
+  <div class="page">
+    <section class="copy">
+      <div class="brand">
+        <div class="brand-row">
+          <span class="brand-name">Danglio</span>
+          <span class="tag">Coming soon</span>
+        </div>
+        <span class="brand-by">by install<b>n</b>go</span>
+      </div>
+      <h1>Something fun is about to <span>hang on your screen.</span></h1>
+      <p class="lead">It sways while you work. It dances when you touch it. And it's never the same thing twice. Wondering what will hang on your screen? Give this one a pull while you wait.</p>
+      <p class="follow">
+        Follow the launch:
+        <a href="https://www.instagram.com/installngo" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.youtube.com/@installngo" target="_blank" rel="noopener">YouTube</a>
+      </p>
+      <footer>© 2026 installngo · <a href="mailto:installngo.official@gmail.com">installngo.official@gmail.com</a></footer>
+    </section>
 
-    <p class="label">Coming soon</p>
-    <h1>Something new is on its way.</h1>
-    <p class="lead">installngo is getting ready to launch. Follow us to be the first to know.</p>
+    <section class="stage" id="stage" aria-label="A charm hanging on a cord. Pull it and let go, or tap it.">
+      <svg class="rope-svg" id="ropeSvg" aria-hidden="true"><path id="rope" d=""></path></svg>
+      <div class="glow" id="glow" aria-hidden="true"></div>
+      <img class="charm" id="charm" src="/assets/murugan.webp" alt="Little Murugan charm" draggable="false">
+      <p class="hint" id="hint">Pull it and let go</p>
+    </section>
+  </div>
 
-    <nav class="links" aria-label="Follow installngo">
-      <a href="https://www.instagram.com/installngo" target="_blank" rel="noopener">Instagram <span aria-hidden="true">↗</span></a>
-      <a href="https://www.youtube.com/@installngo" target="_blank" rel="noopener">YouTube <span aria-hidden="true">↗</span></a>
-    </nav>
-  </main>
-
-  <footer>
-    <span>© 2026 installngo</span>
-    <a href="mailto:installngo.official@gmail.com">installngo.official@gmail.com</a>
-  </footer>
+  <script src="/assets/rope.js" defer></script>
 </body>
 </html>
