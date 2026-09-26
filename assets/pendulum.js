@@ -82,6 +82,7 @@ if (typeof module !== "undefined") module.exports = Pendulum;
 
 if (typeof document !== "undefined") {
   (() => {
+    if (!document.getElementById("ropeCanvas") || !document.getElementById("charm")) return;
     const stage = document.getElementById("stage");
     const ropeCanvas = document.getElementById("ropeCanvas");
     const ctx = ropeCanvas.getContext("2d");

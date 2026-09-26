@@ -1,24 +1,58 @@
 {
   "cleanUrls": true,
   "redirects": [
-    { "source": "/danglio", "destination": "/", "permanent": false },
-    { "source": "/dangle", "destination": "/", "permanent": false },
-    { "source": "/terms", "destination": "/", "permanent": false },
-    { "source": "/privacy", "destination": "/", "permanent": false },
-    { "source": "/refunds", "destination": "/", "permanent": false }
+    {
+      "source": "/danglio",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/dangle",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/terms",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/privacy",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/refunds",
+      "destination": "/",
+      "permanent": false
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "DENY" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ]
 }
