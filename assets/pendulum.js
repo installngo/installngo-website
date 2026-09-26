@@ -5,7 +5,7 @@
 // the motion never jitters. The charm itself tilts with a slight lag, like
 // a real pendant settling on its loop.
 
-const ALLOW_PULL = true; // false = no dragging; tap and breeze still work
+const ALLOW_PULL = true; // false = no dragging anywhere; tap and breeze still work
 
 const Pendulum = (() => {
   const GRAVITY = 2400; // px/s²
@@ -83,7 +83,10 @@ if (typeof module !== "undefined") module.exports = Pendulum;
 if (typeof document !== "undefined") {
   (() => {
     const stage = document.getElementById("stage");
-    const ropePath = document.getElementById("rope");
+    const ropeCanvas = document.getElementById("ropeCanvas");
+    const ctx = ropeCanvas.getContext("2d");
+    let dpr = 1;
+    let dirty = null; // the area the cord covered last frame
     // The image includes the charm's shadow: extra room on the sides and
     // below. These are its proportions (see assets/murugan.webp).
     const IMG = { width: 588, figure: 516, figureHeight: 520 };
@@ -93,8 +96,10 @@ if (typeof document !== "undefined") {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     const narrow = window.matchMedia("(max-width: 820px)");
     const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+    const canPull = ALLOW_PULL;
 
     let p = null;
+    let stageRect = null; // measured once per touch, not on every movement
 
     // The cord: a chain of points hanging between the top of the screen and
     // the charm. The charm's motion comes from the smooth string above; the
@@ -166,6 +171,16 @@ if (typeof document !== "undefined") {
 
     function measure() {
       const s = stage.getBoundingClientRect();
+      stageRect = s;
+      dpr = Math.min(window.devicePixelRatio || 1, 2); // 2× is crisp for a thin cord, and much lighter than 3×
+      ropeCanvas.width = Math.round(s.width * dpr);
+      ropeCanvas.height = Math.round(s.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#b9782b";
+      dirty = null;
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       let length;
@@ -202,21 +217,27 @@ if (typeof document !== "undefined") {
 
     function draw() {
       const t = tip();
-      let d = `M${chain[0].x.toFixed(1)} ${chain[0].y.toFixed(1)}`;
+      // Clear only where the cord was, then draw it where it is now.
+      let minX = t.x, maxX = t.x, minY = t.y, maxY = t.y;
+      for (const c of chain) {
+        if (c.x < minX) minX = c.x;
+        if (c.x > maxX) maxX = c.x;
+        if (c.y < minY) minY = c.y;
+        if (c.y > maxY) maxY = c.y;
+      }
+      if (dirty) ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
+      ctx.beginPath();
+      ctx.moveTo(chain[0].x, chain[0].y);
       for (let i = 1; i < LINKS; i++) {
         const mx = (chain[i].x + chain[i + 1].x) / 2;
         const my = (chain[i].y + chain[i + 1].y) / 2;
-        d += ` Q${chain[i].x.toFixed(1)} ${chain[i].y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+        ctx.quadraticCurveTo(chain[i].x, chain[i].y, mx, my);
       }
-      d += ` L${t.x.toFixed(1)} ${t.y.toFixed(1)}`;
-      ropePath.setAttribute("d", d);
+      ctx.lineTo(t.x, t.y);
+      ctx.stroke();
+      dirty = { x: minX - 6, y: minY - 6, w: maxX - minX + 12, h: maxY - minY + 12 };
       const a = -p.tilt; // CSS turns clockwise
       charm.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%, -3px) rotate(${a}rad)`;
-      const cx = t.x - Math.sin(a) * charmH * 0.5;
-      const cy = t.y + Math.cos(a) * charmH * 0.5;
-      const size = charmW * 1.6;
-      glow.style.transform = `translate(${cx - size / 2}px, ${cy - size / 2}px) scale(${1 + flash * 0.3})`;
-      glow.style.opacity = String(0.65 + flash * 0.35);
     }
 
     // A fast cursor passing close to the charm nudges it.
@@ -297,8 +318,20 @@ if (typeof document !== "undefined") {
       }
     }
 
+    function glowOnce() {
+      if (reduce.matches) return;
+      const t = tip();
+      const a = -p.tilt;
+      const cx = t.x - Math.sin(a) * charmH * 0.5;
+      const cy = t.y + Math.cos(a) * charmH * 0.5;
+      const size = charmW * 1.6;
+      glow.style.transform = `translate(${cx - size / 2}px, ${cy - size / 2}px)`;
+      glow.animate([{ opacity: 0 }, { opacity: 0.9, offset: 0.25 }, { opacity: 0 }], { duration: 900, easing: "ease-out" });
+    }
+
     function bless() {
       flash = 1;
+      glowOnce();
       if (!reduce.matches) {
         p.vr -= 380; // a little hop up the string
         p.w += (Math.random() - 0.5) * 0.8;
@@ -308,19 +341,20 @@ if (typeof document !== "undefined") {
     }
 
     const local = (ev) => {
-      const s = stage.getBoundingClientRect();
+      const s = stageRect || stage.getBoundingClientRect();
       return { x: ev.clientX - s.left, y: ev.clientY - s.top };
     };
 
     // Pull and let go.
     charm.addEventListener("pointerdown", (ev) => {
       ev.preventDefault();
+      stageRect = stage.getBoundingClientRect(); // the page can't scroll during a pull
       charm.setPointerCapture(ev.pointerId);
       hint.style.opacity = "0";
       const q = local(ev);
       const t = tip();
       drag = { id: ev.pointerId, ox: t.x - q.x, oy: t.y - q.y, sx: ev.clientX, sy: ev.clientY, t0: performance.now(), moved: 0 };
-      if (ALLOW_PULL) {
+      if (canPull) {
         charm.classList.add("dragging");
         p.held = true;
         p.target = { th: p.th, r: p.r };
@@ -331,7 +365,7 @@ if (typeof document !== "undefined") {
     charm.addEventListener("pointermove", (ev) => {
       if (!drag || ev.pointerId !== drag.id) return;
       drag.moved = Math.max(drag.moved, Math.hypot(ev.clientX - drag.sx, ev.clientY - drag.sy));
-      if (!ALLOW_PULL) return;
+      if (!canPull) return;
       const q = local(ev);
       const x = q.x + drag.ox - anchor.x;
       const y = Math.max(8, q.y + drag.oy - anchor.y);
@@ -359,6 +393,7 @@ if (typeof document !== "undefined") {
 
     window.addEventListener("pointermove", (ev) => {
       if (ev.pointerType !== "mouse") return;
+      if (!stageRect) stageRect = stage.getBoundingClientRect();
       const q = local(ev);
       const now = performance.now();
       const dt = Math.max((now - pointer.t) / 1000, 0.008);
@@ -385,10 +420,19 @@ if (typeof document !== "undefined") {
       }
     });
 
+    window.addEventListener("scroll", () => {
+      stageRect = null; // re-measured on the next touch or mouse move
+    }, { passive: true });
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) wake();
     });
+    // Phones resize the window when the address bar slides in or out; the
+    // charm ignores that and only re-measures when the width really changes.
+    let lastWidth = window.innerWidth;
     window.addEventListener("resize", () => {
+      if (narrow.matches && window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
       measure();
       buildChain();
       draw();
@@ -401,7 +445,7 @@ if (typeof document !== "undefined") {
       draw();
       wake();
     };
-    if (charm.complete && charm.naturalWidth) start();
-    else charm.addEventListener("load", start, { once: true });
+    const ready = charm.decode ? charm.decode().catch(() => {}) : Promise.resolve();
+    ready.then(start);
   })();
 }
