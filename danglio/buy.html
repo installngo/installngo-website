@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Buy — Danglio</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#FFF4E6">
+  <link rel="icon" href="/assets/danglio-icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --cream: #fff8ee; --ink: #20263d; --muted: #5b6179; --saffron: #f39c12; --saffron-dark: #d9820a; --card: #fff; --peacock: #0e8a74; --red: #b42318; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 16px; color: var(--ink); background: radial-gradient(40rem 26rem at 80% 10%, #ffe0bd 0%, transparent 60%), var(--cream);
+      font-family: "Nunito Sans", "Segoe UI", -apple-system, Arial, sans-serif; line-height: 1.55;
+    }
+    .card { width: min(100%, 420px); padding: 28px 24px 24px; border-radius: 22px; background: var(--card); box-shadow: 0 10px 40px rgba(120, 70, 20, 0.12); text-align: center; }
+    .icon { width: 72px; height: 72px; border-radius: 18px; }
+    .brand { margin: 6px 0 0; font-family: "Baloo 2", "Segoe UI", sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--saffron); }
+    h1 { margin: 14px 0 4px; font-family: "Baloo 2", "Segoe UI", sans-serif; font-size: 1.6rem; line-height: 1.2; }
+    .price { margin: 4px 0 0; font-family: "Baloo 2", "Segoe UI", sans-serif; font-size: 2.2rem; font-weight: 800; color: var(--ink); }
+    .msg { margin: 10px 0 0; color: var(--muted); }
+    .msg.error { color: var(--red); }
+    .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border: 0; border-radius: 12px; font: inherit; font-weight: 700; font-size: 1.05rem; cursor: pointer; text-decoration: none; }
+    .btn--pay { background: var(--saffron); color: #2b1a00; }
+    .btn--pay:hover { background: var(--saffron-dark); }
+    .btn--plain { background: #f4efe7; color: var(--ink); }
+    .btn[hidden] { display: none; }
+    .spinner { width: 34px; height: 34px; margin: 18px auto 0; border: 4px solid #f3dcbc; border-top-color: var(--saffron); border-radius: 50%; animation: spin 0.9s linear infinite; }
+    .tick { width: 56px; height: 56px; margin: 16px auto 0; border-radius: 50%; background: #e2f5ef; color: var(--peacock); display: grid; place-items: center; font-size: 30px; font-weight: 800; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation-duration: 3s; } }
+    .test { display: inline-block; margin-top: 10px; padding: 2px 10px; border-radius: 999px; background: #fff1d6; color: #7a4a00; font-size: 0.8rem; font-weight: 700; }
+    .fine { width: min(100%, 420px); margin-top: 16px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+    .fine a { color: var(--muted); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="card" aria-live="polite">
+    <img class="icon" src="/assets/danglio-icon.png" alt="" width="72" height="72">
+    <p class="brand">Danglio</p>
+    <span class="test" id="test" hidden></span>
+    <h1 id="title"></h1>
+    <p class="price" id="price" hidden></p>
+    <div class="spinner" id="spinner"></div>
+    <div class="tick" id="tick" hidden aria-hidden="true">✓</div>
+    <p class="msg" id="msg"></p>
+    <div class="actions">
+      <button type="button" class="btn btn--pay" id="pay" hidden></button>
+      <a class="btn btn--pay" id="open" href="danglio://purchases" hidden></a>
+    </div>
+  </main>
+  <p class="fine" id="fine"></p>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    // Which server handles the order. The app's developer builds add env=dev.
+    var API = {
+      prod: "https://kvjcskqynhprbvhnslph.supabase.co/functions/v1/danglio-razorpay-order",
+      dev: "https://jlrgqfxkuqbxtvcgnsng.supabase.co/functions/v1/danglio-razorpay-order"
+    };
+    var HELP = "installngo.official@gmail.com";
+
+    var TEXT = {
+      en: {
+        loading: "Getting your checkout ready…",
+        buy: "Buy {name}",
+        note: "One-time payment. It unlocks on every computer signed in to your Danglio account.",
+        pay: "Pay {price}",
+        opening: "Opening the payment window…",
+        confirming: "Confirming your payment…",
+        done: "Unlocked!",
+        doneMsg: "{name} is yours. Going back to Danglio…",
+        pendingMsg: "Payment received. {name} will unlock in Danglio within a minute.",
+        open: "Open Danglio",
+        cancelled: "Payment cancelled. You haven't been charged.",
+        failed: "The payment didn't go through ({reason}). You haven't been charged.",
+        again: "Try again",
+        signIn: "Sign in to Danglio first",
+        signInMsg: "Open Danglio, click Sign in at the top left, then click Buy again.",
+        owned: "You already own this",
+        ownedMsg: "Open Danglio and go to Settings → Purchases → Check for purchases.",
+        notForSale: "This isn't for sale right now",
+        badLink: "This link is incomplete. Start again from Danglio.",
+        error: "Something went wrong. Please try again in a moment.",
+        offline: "Couldn't reach the server. Check your connection and try again.",
+        test: "Test mode: no real money",
+        fine: "Payments by Razorpay: UPI, cards, net banking and more. <a href=\"/refunds\">Refunds</a> · <a href=\"/terms\">Terms</a> · <a href=\"/privacy\">Privacy</a> · Help: <a href=\"mailto:{help}\">{help}</a>"
+      },
+      ta: {
+        loading: "உங்கள் கட்டணப் பக்கம் தயாராகிறது…",
+        buy: "{name} வாங்கவும்",
+        note: "ஒருமுறை கட்டணம். உங்கள் Danglio கணக்கில் உள்நுழைந்த எல்லா கணினிகளிலும் திறக்கப்படும்.",
+        pay: "{price} செலுத்தவும்",
+        opening: "கட்டணச் சாளரம் திறக்கிறது…",
+        confirming: "உங்கள் கட்டணம் உறுதிசெய்யப்படுகிறது…",
+        done: "திறக்கப்பட்டது!",
+        doneMsg: "{name} இப்போது உங்களுடையது. Danglio-க்குத் திரும்புகிறது…",
+        pendingMsg: "கட்டணம் பெறப்பட்டது. ஒரு நிமிடத்துக்குள் {name} Danglio-வில் திறக்கப்படும்.",
+        open: "Danglio-வைத் திற",
+        cancelled: "கட்டணம் ரத்துசெய்யப்பட்டது. உங்களிடம் பணம் எடுக்கப்படவில்லை.",
+        failed: "கட்டணம் நடைபெறவில்லை ({reason}). உங்களிடம் பணம் எடுக்கப்படவில்லை.",
+        again: "மீண்டும் முயல்க",
+        signIn: "முதலில் Danglio-வில் உள்நுழையவும்",
+        signInMsg: "Danglio-வைத் திறந்து, மேலே இடதுபுறம் உள்ள உள்நுழை என்பதைக் கிளிக் செய்து, மீண்டும் வாங்கு என்பதைக் கிளிக் செய்யவும்.",
+        owned: "இது ஏற்கனவே உங்களிடம் உள்ளது",
+        ownedMsg: "Danglio-வில் அமைப்புகள் → வாங்குதல்கள் → வாங்குதல்களைச் சரிபார் என்பதற்குச் செல்லவும்.",
+        notForSale: "இது இப்போது விற்பனையில் இல்லை",
+        badLink: "இந்த இணைப்பு முழுமையாக இல்லை. Danglio-விலிருந்து மீண்டும் தொடங்கவும்.",
+        error: "ஏதோ தவறு நடந்தது. சிறிது நேரம் கழித்து மீண்டும் முயலவும்.",
+        offline: "சர்வரை அடைய முடியவில்லை. இணைப்பைச் சரிபார்த்து மீண்டும் முயலவும்.",
+        test: "சோதனை முறை: உண்மையான பணம் இல்லை",
+        fine: "Razorpay மூலம் கட்டணம்: UPI, கார்டுகள், நெட் பேங்கிங் மற்றும் பல. <a href=\"/refunds\">பணத்திருப்பம்</a> · <a href=\"/terms\">விதிமுறைகள்</a> · <a href=\"/privacy\">தனியுரிமை</a> · உதவி: <a href=\"mailto:{help}\">{help}</a>"
+      },
+      hi: {
+        loading: "आपका चेकआउट तैयार हो रहा है…",
+        buy: "{name} ख़रीदें",
+        note: "एक बार का भुगतान। आपके Danglio खाते में साइन इन हर कंप्यूटर पर अनलॉक होगा।",
+        pay: "{price} चुकाएँ",
+        opening: "भुगतान विंडो खुल रही है…",
+        confirming: "आपके भुगतान की पुष्टि हो रही है…",
+        done: "अनलॉक हो गया!",
+        doneMsg: "{name} अब आपका है। Danglio पर वापस जा रहे हैं…",
+        pendingMsg: "भुगतान मिल गया। {name} एक मिनट में Danglio में अनलॉक हो जाएगा।",
+        open: "Danglio खोलें",
+        cancelled: "भुगतान रद्द हुआ। आपसे कोई पैसा नहीं लिया गया।",
+        failed: "भुगतान नहीं हो पाया ({reason})। आपसे कोई पैसा नहीं लिया गया।",
+        again: "फिर से कोशिश करें",
+        signIn: "पहले Danglio में साइन इन करें",
+        signInMsg: "Danglio खोलें, ऊपर बाईं ओर साइन इन पर क्लिक करें, फिर दोबारा ख़रीदें पर क्लिक करें।",
+        owned: "यह पहले से आपके पास है",
+        ownedMsg: "Danglio में सेटिंग्स → ख़रीदारी → ख़रीदारी जाँचें पर जाएँ।",
+        notForSale: "यह अभी बिक्री के लिए नहीं है",
+        badLink: "यह लिंक अधूरा है। Danglio से फिर से शुरू करें।",
+        error: "कुछ गड़बड़ हो गई। थोड़ी देर बाद फिर कोशिश करें।",
+        offline: "सर्वर तक नहीं पहुँच सके। अपना कनेक्शन जाँचें और फिर कोशिश करें।",
+        test: "टेस्ट मोड: असली पैसा नहीं",
+        fine: "Razorpay से भुगतान: UPI, कार्ड, नेट बैंकिंग और बहुत कुछ। <a href=\"/refunds\">रिफ़ंड</a> · <a href=\"/terms\">शर्तें</a> · <a href=\"/privacy\">गोपनीयता</a> · मदद: <a href=\"mailto:{help}\">{help}</a>"
+      },
+      ms: {
+        loading: "Menyediakan pembayaran anda…",
+        buy: "Beli {name}",
+        note: "Bayaran sekali sahaja. Dibuka di setiap komputer yang log masuk ke akaun Danglio anda.",
+        pay: "Bayar {price}",
+        opening: "Membuka tetingkap pembayaran…",
+        confirming: "Mengesahkan pembayaran anda…",
+        done: "Dibuka!",
+        doneMsg: "{name} kini milik anda. Kembali ke Danglio…",
+        pendingMsg: "Pembayaran diterima. {name} akan dibuka dalam Danglio dalam masa seminit.",
+        open: "Buka Danglio",
+        cancelled: "Pembayaran dibatalkan. Anda tidak dicaj.",
+        failed: "Pembayaran tidak berjaya ({reason}). Anda tidak dicaj.",
+        again: "Cuba lagi",
+        signIn: "Log masuk ke Danglio dahulu",
+        signInMsg: "Buka Danglio, klik Log masuk di bahagian atas kiri, kemudian klik Beli sekali lagi.",
+        owned: "Anda sudah memiliki ini",
+        ownedMsg: "Buka Danglio dan pergi ke Tetapan → Pembelian → Semak pembelian.",
+        notForSale: "Ini tidak dijual buat masa ini",
+        badLink: "Pautan ini tidak lengkap. Mula semula dari Danglio.",
+        error: "Sesuatu tidak kena. Sila cuba lagi sebentar lagi.",
+        offline: "Tidak dapat menghubungi pelayan. Semak sambungan anda dan cuba lagi.",
+        test: "Mod ujian: bukan wang sebenar",
+        fine: "Pembayaran oleh Razorpay: UPI, kad, perbankan internet dan lain-lain. <a href=\"/refunds\">Bayaran balik</a> · <a href=\"/terms\">Terma</a> · <a href=\"/privacy\">Privasi</a> · Bantuan: <a href=\"mailto:{help}\">{help}</a>"
+      }
+    };
+
+    var params = new URLSearchParams(location.search);
+    var product = params.get("product") || "";
+    var install = params.get("install") || "";
+    var lang = (params.get("lang") || "en").slice(0, 2);
+    var env = params.get("env") === "dev" ? "dev" : "prod";
+    var T = TEXT[lang] || TEXT.en;
+    document.documentElement.lang = TEXT[lang] ? lang : "en";
+
+    var $ = function (id) { return document.getElementById(id); };
+    var fill = function (text, values) {
+      return text.replace(/\{(\w+)\}/g, function (_, k) { return values && values[k] !== undefined ? values[k] : ""; });
+    };
+    $("fine").innerHTML = fill(T.fine, { help: HELP });
+    if (env === "dev") { $("test").textContent = T.test; $("test").hidden = false; }
+
+    var order = null;
+
+    function show(state) {
+      $("title").textContent = state.title || "";
+      $("msg").textContent = state.msg || "";
+      $("msg").className = state.error ? "msg error" : "msg";
+      $("spinner").hidden = !state.busy;
+      $("tick").hidden = !state.done;
+      $("price").hidden = !state.price;
+      $("price").textContent = state.price || "";
+      $("pay").hidden = !state.pay;
+      $("pay").textContent = state.pay || "";
+      $("open").hidden = !state.open;
+      $("open").textContent = T.open;
+      document.title = (state.title ? state.title + " — " : "") + "Danglio";
+    }
+
+    function rupees(paise) {
+      var whole = paise % 100 === 0;
+      return "₹" + (paise / 100).toLocaleString("en-IN", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
+    }
+
+    function call(body) {
+      return fetch(API[env], {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      }).then(function (res) {
+        return res.json().catch(function () { return {}; }).then(function (data) {
+          if (!res.ok) { var e = new Error(data.message || "failed"); e.code = data.error || "failed"; throw e; }
+          return data;
+        });
+      }, function () { var e = new Error("offline"); e.code = "offline"; throw e; });
+    }
+
+    function showError(e) {
+      switch (e.code) {
+        case "sign_in_required": return show({ title: T.signIn, msg: T.signInMsg, open: true });
+        case "already_owned": return show({ title: T.owned, msg: T.ownedMsg, open: true });
+        case "not_for_sale": return show({ title: T.notForSale, msg: "", open: true });
+        case "bad_request": return show({ title: "", msg: T.badLink, error: true });
+        case "offline": return show({ title: "", msg: T.offline, error: true, pay: T.again });
+        default: return show({ title: "", msg: T.error, error: true, pay: T.again });
+      }
+    }
+
+    function ready() {
+      var name = order.product.name;
+      show({ title: fill(T.buy, { name: name }), price: rupees(order.amount), msg: T.note, pay: fill(T.pay, { price: rupees(order.amount) }) });
+    }
+
+    function openPayment() {
+      if (typeof Razorpay !== "function") return showError({ code: "offline" });
+      show({ title: fill(T.buy, { name: order.product.name }), price: rupees(order.amount), msg: T.opening, busy: true });
+      var rzp = new Razorpay({
+        key: order.keyId,
+        amount: order.amount,
+        currency: order.currency,
+        order_id: order.orderId,
+        name: "Danglio",
+        description: order.product.name,
+        image: location.origin + "/assets/danglio-icon.png",
+        prefill: order.email ? { email: order.email } : {},
+        theme: { color: "#F39C12" },
+        handler: confirm,
+        modal: {
+          ondismiss: function () {
+            if (!paid) show({ title: fill(T.buy, { name: order.product.name }), price: rupees(order.amount), msg: T.cancelled, pay: T.again });
+          }
+        }
+      });
+      rzp.on("payment.failed", function (r) {
+        var reason = (r && r.error && r.error.description) || "";
+        show({ title: fill(T.buy, { name: order.product.name }), price: rupees(order.amount), msg: fill(T.failed, { reason: reason }), error: true, pay: T.again });
+      });
+      rzp.open();
+    }
+
+    var paid = false;
+    function confirm(resp) {
+      paid = true;
+      var name = order.product.name;
+      show({ title: T.confirming, busy: true });
+      var goBack = function (msg) {
+        show({ title: T.done, msg: msg, done: true, open: true });
+        setTimeout(function () { location.href = "danglio://purchases"; }, 900);
+      };
+      call({
+        action: "confirm",
+        install: install,
+        orderId: resp.razorpay_order_id,
+        paymentId: resp.razorpay_payment_id,
+        signature: resp.razorpay_signature
+      }).then(function (r) {
+        goBack(r.recorded ? fill(T.doneMsg, { name: name }) : fill(T.pendingMsg, { name: name }));
+      }, function () {
+        // The payment went through; the webhook records it shortly.
+        goBack(fill(T.pendingMsg, { name: name }));
+      });
+    }
+
+    function start() {
+      if (!/^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/.test(product) || !/^[0-9a-f-]{36}$/.test(install)) {
+        return showError({ code: "bad_request" });
+      }
+      show({ title: "", msg: T.loading, busy: true });
+      call({ action: "create", install: install, product: product }).then(function (data) {
+        order = data;
+        ready();
+        openPayment();
+      }, showError);
+    }
+
+    $("pay").addEventListener("click", function () {
+      if (order && !paid) openPayment(); else start();
+    });
+
+    start();
+  })();
+  </script>
+</body>
+</html>

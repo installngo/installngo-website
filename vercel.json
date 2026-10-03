@@ -2,29 +2,24 @@
   "cleanUrls": true,
   "redirects": [
     {
-      "source": "/danglio",
-      "destination": "/",
-      "permanent": false
-    },
-    {
       "source": "/dangle",
-      "destination": "/",
-      "permanent": false
+      "destination": "/danglio",
+      "permanent": true
     },
     {
-      "source": "/terms",
-      "destination": "/",
-      "permanent": false
+      "source": "/refund",
+      "destination": "/refunds",
+      "permanent": true
     },
     {
-      "source": "/privacy",
-      "destination": "/",
-      "permanent": false
+      "source": "/shipping",
+      "destination": "/delivery",
+      "permanent": true
     },
     {
-      "source": "/refunds",
+      "source": "/about",
       "destination": "/",
-      "permanent": false
+      "permanent": true
     }
   ],
   "headers": [

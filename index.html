@@ -1,267 +1,80 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Danglio by installngo — something is dangling…</title>
-  <meta name="description" content="Danglio: a little companion that dangles from the top of your screen. Pull it, flick it, let it go. Coming soon from installngo.">
-  <meta name="theme-color" content="#FFF4E6">
-
-  <!-- Link preview for WhatsApp, Instagram, Facebook and others -->
+  <title>installngo — small apps you just install and go</title>
+  <meta name="description" content="installngo makes small, delightful apps for your computer. Our first app, Danglio, hangs a charm from the top of your screen. Coming soon on the Microsoft Store.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.installngo.com/">
+  <meta name="theme-color" content="#ffffff">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="installngo">
-  <meta property="og:title" content="Danglio — something is dangling… 👀">
-  <meta property="og:description" content="Pull it, flick it, let it go. Danglio is coming soon from installngo.">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:title" content="installngo — small apps you just install and go">
+  <meta property="og:description" content="installngo makes small, delightful apps for your computer. Our first app, Danglio, hangs a charm from the top of your screen. Coming soon on the Microsoft Store.">
   <meta property="og:url" content="https://www.installngo.com/">
-  <meta property="og:image" content="https://www.installngo.com/assets/share.jpg">
+  <meta property="og:image" content="https://www.installngo.com/assets/installngo-share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:image" content="https://www.installngo.com/assets/share.jpg">
-
-  <link rel="preload" as="image" href="/assets/murugan.webp?v=10">
+  <meta name="twitter:title" content="installngo — small apps you just install and go">
+  <meta name="twitter:description" content="installngo makes small, delightful apps for your computer. Our first app, Danglio, hangs a charm from the top of your screen. Coming soon on the Microsoft Store.">
+  <meta name="twitter:image" content="https://www.installngo.com/assets/installngo-share.jpg">
+  <link rel="icon" href="/favicon.ico?v=2" sizes="48x48">
+  <link rel="icon" href="/assets/favicon-96.png?v=2" type="image/png" sizes="96x96">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fraunces:ital,opsz,wght@1,9..144,400&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --cream: #fff8ee;
-      --peach: #ffe6cf;
-      --ink: #20263d;
-      --muted: #5b6179;
-      --saffron: #f39c12;
-      --marigold: #ffb935;
-      --peacock: #0e8a74;
-      --rope: #b9782b;
-      --card: #ffffff;
-    }
-    * { box-sizing: border-box; }
-    html, body { margin: 0; }
-    body {
-      min-height: 100vh;
-      min-height: 100dvh;
-      color: var(--ink);
-      font-family: "Nunito Sans", "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
-      background:
-        radial-gradient(60rem 36rem at 78% 18%, #ffe0bd 0%, transparent 60%),
-        radial-gradient(40rem 30rem at 8% 92%, #dff4ee 0%, transparent 60%),
-        var(--cream);
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    .page {
-      display: grid;
-      grid-template-columns: 1.05fr 1fr;
-      min-height: 100vh;
-      min-height: 100dvh;
-      width: min(100%, 1180px);
-      margin-inline: auto;
-      padding: 0 clamp(1.25rem, 4vw, 3rem);
-    }
-
-    /* The charm's stage: the cord hangs from the very top of the screen */
-    .stage {
-      position: fixed;
-      inset: 0;
-      z-index: 3;
-      pointer-events: none; /* only the charm catches the pointer, like the app */
-      overflow: visible;
-    }
-    .rope-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    .glow {
-      position: absolute;
-      left: 0;
-      top: 0;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 196, 92, 0.6) 0%, rgba(255, 196, 92, 0) 65%);
-      opacity: 0; /* only flashes when the charm is tapped */
-      pointer-events: none;
-    }
-    .charm {
-      pointer-events: auto;
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: var(--charm-size, 280px);
-      transform-origin: 50% 0;
-      cursor: grab;
-      touch-action: none;
-      -webkit-user-drag: none;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      will-change: transform; /* its shadow is part of the image */
-    }
-    .charm.dragging { cursor: grabbing; }
-    .spark {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--marigold);
-      box-shadow: 0 0 8px rgba(255, 185, 53, 0.9);
-      pointer-events: none;
-    }
-    .hint {
-      position: absolute;
-      left: 0;
-      top: 0;
-      margin: 0;
-      white-space: nowrap;
-      font-weight: 700;
-      font-size: 0.95rem;
-      color: var(--muted);
-      pointer-events: none;
-      transition: opacity 300ms ease-out;
-    }
-
-    /* The words */
-    .copy {
-      grid-column: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding-block: 3rem 4rem;
-    }
-    .brand { display: flex; flex-direction: column; gap: 0.15rem; }
-    .brand-row { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem 0.9rem; }
-    .brand-name {
-      --brand-size: clamp(2.4rem, 5vw, 3.4rem);
-      font-family: "Baloo 2", "Segoe UI", sans-serif;
-      font-weight: 800;
-      font-size: var(--brand-size);
-      white-space: nowrap;
-      line-height: 1;
-      letter-spacing: -0.02em;
-      color: var(--saffron);
-    }
-    .brand-by { font-weight: 700; font-size: 1rem; color: var(--muted); }
-    .brand-by b { color: var(--saffron); }
-    /* "Coming soon" sits right after the o of Danglio: the same height as
-       that o (0.51 of the font size in Baloo 2) and on the same baseline. */
-    .tag {
-      display: inline-block;
-      overflow: hidden; /* makes its bottom edge sit on the text baseline */
-      vertical-align: baseline;
-      height: calc(var(--brand-size) * 0.51);
-      line-height: calc(var(--brand-size) * 0.51);
-      margin-left: calc(var(--brand-size) * 0.16);
-      padding: 0 0.6rem;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: 0 1px 6px rgba(120, 70, 20, 0.12);
-      font-family: "Nunito Sans", "Segoe UI", sans-serif;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      color: var(--peacock);
-      white-space: nowrap;
-    }
-    .tag::before {
-      content: "";
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      margin-right: 0.35rem;
-      vertical-align: middle;
-      position: relative;
-      top: -1px;
-      border-radius: 50%;
-      background: var(--peacock);
-      animation: pulse 1.6s ease-in-out infinite;
-    }
-    @keyframes pulse { 50% { opacity: 0.25; } }
-    h1 {
-      margin: clamp(1.75rem, 6vh, 3.5rem) 0 0;
-      font-family: "Baloo 2", "Segoe UI", sans-serif;
-      font-weight: 800;
-      font-size: clamp(2.1rem, 4.8vw, 3.8rem);
-      line-height: 1.02;
-      letter-spacing: -0.02em;
-      max-width: 14ch;
-    }
-    h1 span { color: var(--saffron); }
-    .lead {
-      margin: 1.1rem 0 0;
-      font-family: "Fraunces", Georgia, "Times New Roman", serif;
-      font-style: italic;
-      font-weight: 400;
-      font-size: clamp(0.98rem, 1.35vw, 1.12rem);
-      line-height: 1.65;
-      color: var(--muted);
-      max-width: 36ch;
-    }
-    .follow {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.4rem 1.2rem;
-      margin: 1.8rem 0 0;
-      font-weight: 700;
-      color: var(--muted);
-    }
-    .follow a { color: var(--ink); text-decoration-color: var(--saffron); text-underline-offset: 4px; text-decoration-thickness: 2px; }
-    footer {
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    footer a { color: var(--muted); }
-
-    /* Phones and narrow screens: charm in a block at the top, words below */
-    @media (max-width: 820px) {
-      .page { grid-template-columns: 1fr; }
-      .stage {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: auto;
-        height: min(64vh, 560px);
-        height: min(64svh, 560px); /* svh: stays put when the address bar moves */
-      }
-      .copy { justify-content: flex-start; padding-block: calc(min(64vh, 560px) + 0.5rem) 2.5rem; padding-block: calc(min(64svh, 560px) + 0.5rem) 2.5rem; }
-      .hint { left: 50%; top: auto; bottom: 0.5rem; transform: translateX(-50%); font-size: 0.85rem; }
-      h1 { margin-top: 1.25rem; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .tag::before { animation: none; }
-    }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/site.css?v=2">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","@id":"https://www.installngo.com/#org","name":"installngo","url":"https://www.installngo.com/","logo":"https://www.installngo.com/assets/installngo-logo.png","email":"installngo.official@gmail.com","founder":{"@type":"Person","name":"Prabaharan Krishnakumar"},"address":{"@type":"PostalAddress","addressLocality":"Pollachi","addressRegion":"Tamil Nadu","addressCountry":"IN"},"sameAs":["https://www.instagram.com/installngo","https://www.youtube.com/@installngo"]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","@id":"https://www.installngo.com/#website","name":"installngo","url":"https://www.installngo.com/","publisher":{"@id":"https://www.installngo.com/#org"},"inLanguage":"en-IN"}</script>
 </head>
 <body>
-  <div class="page">
-    <section class="copy">
-      <div class="brand">
-        <div class="brand-row">
-          <span class="brand-name">Danglio<span class="tag">Coming soon</span></span>
-        </div>
-        <span class="brand-by">by install<b>n</b>go</span>
-      </div>
-      <h1>Something fun is about to <span>hang on your screen.</span></h1>
-      <p class="lead">It swings when you nudge it. It sparkles when you tap it. And it's never the same thing twice. Wondering what will hang on your screen? Give this one a pull while you wait.</p>
-      <p class="follow">
-        Follow the launch:
-        <a href="https://www.instagram.com/installngo" target="_blank" rel="noopener">Instagram</a>
-        <a href="https://www.youtube.com/@installngo" target="_blank" rel="noopener">YouTube</a>
-      </p>
-      <footer>© 2026 installngo · <a href="mailto:installngo.official@gmail.com">installngo.official@gmail.com</a></footer>
+  <header class="site-head">
+    <div class="wrap">
+      <a class="logo" href="/"><img src="/assets/installngo-logo.png" alt="installngo" width="140" height="33"></a>
+      <nav class="site-nav" aria-label="Main">
+        <a href="/danglio">Danglio</a>
+        <a href="/contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="hero wrap">
+      <h1>Small apps you just <span>install and go.</span></h1>
+      <p>Little apps that bring a bit of joy to your computer. No clutter, no ads.</p>
     </section>
 
-  </div>
+    <section class="wrap" aria-labelledby="apps-title">
+      <h2 class="section-title" id="apps-title">Our apps</h2>
+      <ul class="products">
+        <li class="product">
+          <div class="product__art"><img src="/assets/murugan.webp?v=10" alt="A Little Murugan charm hanging on a golden cord" width="190" height="190" loading="lazy"></div>
+          <div class="product__body">
+            <h3 class="product__name"><a href="/danglio">Danglio</a></h3>
+            <p>A charm that hangs from the top of your screen. Pull it, flick it, tap it for a little sparkle.</p>
+            <span class="badge">Coming soon · Windows</span>
+          </div>
+        </li>
+      </ul>
 
-  <section class="stage" id="stage" aria-label="A charm hanging from the top of the screen. Pull it and let go, or tap it.">
-    <canvas class="rope-canvas" id="ropeCanvas" aria-hidden="true"></canvas>
-    <div class="glow" id="glow" aria-hidden="true"></div>
-    <img class="charm" id="charm" decoding="async" src="/assets/murugan.webp?v=10" alt="Little Murugan charm" draggable="false">
-    <p class="hint" id="hint">Pull it and let go</p>
-  </section>
-
-  <script src="/assets/pendulum.js?v=10" defer></script>
+    </section>
+  </main>
+  <footer class="site-foot">
+    <div class="wrap">
+      <span>© 2026 installngo · Pollachi, Tamil Nadu, India</span>
+      <nav aria-label="Legal and help">
+        <a href="/danglio">Danglio</a>
+        <a href="/contact">Contact</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/refunds">Refunds</a>
+        <a href="/delivery">Delivery</a>
+      </nav>
+    </div>
+  </footer>
 </body>
 </html>

@@ -408,6 +408,8 @@ if (typeof document !== "undefined") {
       pointer.inside = true;
       if (Math.hypot(pointer.vx, pointer.vy) > 250) wake();
     });
+    // The stage scrolls with the page now, so measure it again after a scroll.
+    window.addEventListener("scroll", () => { if (!drag) stageRect = null; }, { passive: true });
     document.addEventListener("pointerleave", () => {
       pointer.inside = false;
     });
