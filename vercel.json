@@ -2,8 +2,13 @@
   "cleanUrls": true,
   "redirects": [
     {
+      "source": "/danglio",
+      "destination": "/",
+      "permanent": false
+    },
+    {
       "source": "/dangle",
-      "destination": "/danglio",
+      "destination": "/",
       "permanent": true
     },
     {
@@ -45,7 +50,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
     }

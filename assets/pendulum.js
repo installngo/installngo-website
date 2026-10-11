@@ -90,7 +90,12 @@ if (typeof document !== "undefined") {
     let dirty = null; // the area the cord covered last frame
     // The image includes the charm's shadow: extra room on the sides and
     // below. These are its proportions (see assets/murugan.webp).
-    const IMG = { width: 588, figure: 516, figureHeight: 520 };
+    // A different charm can say its own proportions on the <img>:
+    // data-img-width (whole image), data-figure (the width the size is
+    // measured by) and data-figure-height. Murugan's are the default.
+    const charmEl = document.getElementById("charm");
+    const num = (k, d) => Number(charmEl.dataset[k]) || d;
+    const IMG = { width: num("imgWidth", 588), figure: num("figure", 516), figureHeight: num("figureHeight", 520) };
     const charm = document.getElementById("charm");
     const glow = document.getElementById("glow");
     const hint = document.getElementById("hint");
@@ -118,9 +123,12 @@ if (typeof document !== "undefined") {
         chain.push({ x, y, px: x, py: y });
       }
     }
-    function stepChain(dt) {
-      const n = Math.max(1, Math.ceil(dt / (1 / 120)));
-      const h = dt / n;
+    // One fixed step of the cord. Always called with the same step size (see
+    // frame()), because this kind of solver keeps velocity as "where it was
+    // a step ago": a step size that changes from frame to frame makes the
+    // cord shiver.
+    function stepChain(h) {
+      const n = 1;
       const g = 2400 * h * h;
       const t = tip();
       // A touch longer than the gap, so the cord keeps a little life in it.
@@ -128,8 +136,8 @@ if (typeof document !== "undefined") {
       for (let k = 0; k < n; k++) {
         for (let i = 1; i < LINKS; i++) {
           const c = chain[i];
-          const vx = (c.x - c.px) * 0.985;
-          const vy = (c.y - c.py) * 0.985;
+          const vx = (c.x - c.px) * 0.9925; // same air drag as 0.985 at 120 steps a second
+          const vy = (c.y - c.py) * 0.9925;
           c.px = c.x;
           c.py = c.y;
           c.x += vx;
@@ -216,11 +224,19 @@ if (typeof document !== "undefined") {
     // Where the string meets the charm's loop.
     const tip = () => ({ x: anchor.x + Math.sin(p.th) * p.r, y: anchor.y + Math.cos(p.th) * p.r });
 
-    function draw() {
-      const t = tip();
+    // Drawn between the last two physics steps (alpha 0..1), so the motion is
+    // even even when a frame holds 3 steps and the next holds 5.
+    let prev = null;
+    function draw(alpha = 1) {
+      const lerp = (a, b) => a + (b - a) * alpha;
+      const th = prev ? lerp(prev.th, p.th) : p.th;
+      const r = prev ? lerp(prev.r, p.r) : p.r;
+      const tilt = prev ? lerp(prev.tilt, p.tilt) : p.tilt;
+      const t = { x: anchor.x + Math.sin(th) * r, y: anchor.y + Math.cos(th) * r };
+      const pts = chain.map((c, i) => (i === 0 || i === LINKS || !prev ? c : { x: lerp(c.px, c.x), y: lerp(c.py, c.y) }));
       // Clear only where the cord was, then draw it where it is now.
       let minX = t.x, maxX = t.x, minY = t.y, maxY = t.y;
-      for (const c of chain) {
+      for (const c of pts) {
         if (c.x < minX) minX = c.x;
         if (c.x > maxX) maxX = c.x;
         if (c.y < minY) minY = c.y;
@@ -228,16 +244,17 @@ if (typeof document !== "undefined") {
       }
       if (dirty) ctx.clearRect(dirty.x, dirty.y, dirty.w, dirty.h);
       ctx.beginPath();
-      ctx.moveTo(chain[0].x, chain[0].y);
+      ctx.moveTo(pts[0].x, pts[0].y);
       for (let i = 1; i < LINKS; i++) {
-        const mx = (chain[i].x + chain[i + 1].x) / 2;
-        const my = (chain[i].y + chain[i + 1].y) / 2;
-        ctx.quadraticCurveTo(chain[i].x, chain[i].y, mx, my);
+        const nx = i + 1 === LINKS ? t : pts[i + 1];
+        const mx = (pts[i].x + nx.x) / 2;
+        const my = (pts[i].y + nx.y) / 2;
+        ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
       }
       ctx.lineTo(t.x, t.y);
       ctx.stroke();
       dirty = { x: minX - 6, y: minY - 6, w: maxX - minX + 12, h: maxY - minY + 12 };
-      const a = -p.tilt; // CSS turns clockwise
+      const a = -tilt; // CSS turns clockwise
       charm.style.transform = `translate(${t.x}px, ${t.y}px) translate(-50%, -3px) rotate(${a}rad)`;
     }
 
@@ -259,18 +276,28 @@ if (typeof document !== "undefined") {
       pointer.vy *= 0.6;
     }
 
+    // Physics runs in fixed small steps (240 a second) whatever the screen's
+    // refresh rate, so the swing looks the same and stays smooth on 60 Hz,
+    // 120 Hz and busy machines alike.
+    const STEP = 1 / 240;
+    let acc = 0;
     function frame(now) {
-      const dt = Math.min((now - last) / 1000, 1 / 30);
+      const dt = Math.min((now - last) / 1000, 1 / 20);
       last = now;
       air();
-      if (!reduce.matches || drag) Pendulum.step(p, dt);
-      stepChain(dt);
+      acc += dt;
+      while (acc >= STEP) {
+        prev = { th: p.th, r: p.r, tilt: p.tilt };
+        if (!reduce.matches || drag) Pendulum.step(p, STEP);
+        stepChain(STEP);
+        acc -= STEP;
+      }
       flash = Math.max(0, flash - dt * 1.3);
-      draw();
+      draw(acc / STEP);
       let cordMotion = 0;
       for (const c of chain) cordMotion = Math.max(cordMotion, Math.abs(c.x - c.px) + Math.abs(c.y - c.py));
       quiet = !drag && Pendulum.energy(p) < 0.004 && cordMotion < 0.02 && flash === 0 ? quiet + 1 : 0;
-      if (quiet > 30 || document.hidden) {
+      if (quiet > 30 || document.hidden || offscreen) {
         running = false;
         scheduleGust();
         return;
@@ -278,10 +305,21 @@ if (typeof document !== "undefined") {
       requestAnimationFrame(frame);
     }
 
+    // Scrolled past the charm: stop animating it (keeps scrolling smooth and
+    // saves battery); it carries on when it comes back into view.
+    let offscreen = false;
+    if ("IntersectionObserver" in window) {
+      new IntersectionObserver((entries) => {
+        offscreen = !entries[0].isIntersecting;
+        if (!offscreen) wake();
+      }).observe(stage);
+    }
+
     function wake() {
-      if (running) return;
+      if (running || offscreen || !p) return; // not set up yet: the first measure() starts it
       running = true;
       quiet = 0;
+      acc = 0;
       last = performance.now();
       requestAnimationFrame(frame);
     }
