@@ -1,0 +1,22 @@
+# Danglio by installngo
+
+> Danglio is a free desktop app for Windows and Mac that hangs a lucky charm from the top of the screen. You can pull it, flick it and tap it for a ritual. Its Desk buddy walks along the bottom of the screen to remind you about water, breaks, eye rest and your own reminders and meetings. Made by installngo in Pollachi, Tamil Nadu, India.
+
+## Facts
+- Price: free to download, no ads. Danglio Pro is one payment, for life (price shown in the app; buying open in India).
+- Free: free charms and packs, physics and tap rituals, Desk buddy reminders.
+- Pro: every premium charm and pack, Create with AI (your photo as a charm), Charm timer, everything new.
+- Platforms: Windows 10 and 11 (Microsoft Store), macOS 13 or newer (direct download), Android in testing on Google Play.
+- Languages: English, Tamil, Hindi, Malay.
+- No account needed; sign in with email only to buy or to use purchases on several devices.
+- Privacy: photo charms are made and kept on the user's computer; Danglio does not upload photos.
+- Desk buddy: add a reminder from any app with Ctrl+Alt+B (Cmd+Option+B on Mac); reminders can be once on a date, daily, Monday to Friday, chosen days, early, or repeating; it waits while a full-screen app is open.
+
+## Links
+- [Danglio home](https://www.installngo.com/): features, download, pricing and FAQ
+- [Microsoft Store](https://apps.microsoft.com/detail/9P16SST2JVCB): Windows download
+- [Mac download](https://www.installngo.com/download/mac): Danglio.dmg
+- [Privacy policy](https://www.installngo.com/privacy)
+- [Terms](https://www.installngo.com/terms)
+- [Refunds](https://www.installngo.com/refunds)
+- [Contact](https://www.installngo.com/contact): installngo.official@gmail.com

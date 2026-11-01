@@ -2,4 +2,24 @@ User-agent: *
 Allow: /
 Disallow: /danglio/buy
 
+# AI assistants are welcome to read and quote the public pages (see /llms.txt).
+User-agent: GPTBot
+Allow: /
+Disallow: /danglio/buy
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /danglio/buy
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /danglio/buy
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /danglio/buy
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://www.installngo.com/sitemap.xml

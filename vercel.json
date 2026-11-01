@@ -35,6 +35,10 @@
     {
       "source": "/danglio-api/functions/v1/:path*",
       "destination": "https://kvjcskqynhprbvhnslph.supabase.co/functions/v1/:path*"
+    },
+    {
+      "source": "/download/mac",
+      "destination": "https://kvjcskqynhprbvhnslph.supabase.co/storage/v1/object/public/downloads/mac/Danglio.dmg"
     }
   ],
   "headers": [
@@ -61,6 +65,24 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
+    },
+    {
+      "source": "/download/mac",
+      "headers": [
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"Danglio.dmg\""
+        }
+      ]
+    },
+    {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
         }
       ]
     }
