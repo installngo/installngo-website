@@ -27,6 +27,16 @@
       "permanent": true
     }
   ],
+  "rewrites": [
+    {
+      "source": "/danglio-api/storage/v1/object/public/danglio-packs/:path*",
+      "destination": "https://kvjcskqynhprbvhnslph.supabase.co/storage/v1/object/public/danglio-packs/:path*"
+    },
+    {
+      "source": "/danglio-api/functions/v1/:path*",
+      "destination": "https://kvjcskqynhprbvhnslph.supabase.co/functions/v1/:path*"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
