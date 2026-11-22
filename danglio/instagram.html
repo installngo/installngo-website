@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Instagram — Danglio</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#FFF4E6">
+  <link rel="icon" href="/assets/danglio-icon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700;800&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Follower charm (Danglio 0.1.13): where people land after connecting
+       Instagram. The server sends ?ok=1&u=<username> or ?error=<reason>. -->
+  <style>
+    :root { --cream: #fff8ee; --ink: #20263d; --muted: #5b6179; --saffron: #f39c12; --saffron-dark: #d9820a; --card: #fff; --peacock: #0e8a74; --red: #b42318; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center;
+      padding: 24px 16px; color: var(--ink); background: radial-gradient(40rem 26rem at 80% 10%, #ffe0bd 0%, transparent 60%), var(--cream);
+      font-family: "Nunito Sans", "Segoe UI", -apple-system, Arial, sans-serif; line-height: 1.55;
+    }
+    .card { width: min(100%, 420px); padding: 28px 24px 24px; border-radius: 22px; background: var(--card); box-shadow: 0 10px 40px rgba(120, 70, 20, 0.12); text-align: center; }
+    .icon { width: 72px; height: 72px; border-radius: 18px; }
+    h1 { margin: 14px 0 4px; font-family: "Baloo 2", "Segoe UI", sans-serif; font-size: 1.6rem; line-height: 1.2; }
+    .msg { margin: 10px 0 0; color: var(--muted); }
+    .tick, .cross { width: 56px; height: 56px; margin: 16px auto 0; border-radius: 50%; display: grid; place-items: center; font-size: 30px; font-weight: 800; }
+    .tick { background: #e2f5ef; color: var(--peacock); }
+    .cross { background: #fdecea; color: var(--red); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 20px; padding: 0 22px; border-radius: 12px; background: var(--saffron); color: #2b1a00; font-weight: 700; text-decoration: none; }
+    .btn:hover { background: var(--saffron-dark); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img class="icon" src="/assets/danglio-icon.png" alt="Danglio">
+    <div id="ok" hidden>
+      <div class="tick" aria-hidden="true">✓</div>
+      <h1>Instagram connected</h1>
+      <p class="msg" id="okText">Your follower count will appear under your charm in a moment.</p>
+      <a class="btn" href="danglio://followers">Back to Danglio</a>
+      <p class="msg">You can close this tab.</p>
+    </div>
+    <div id="bad" hidden>
+      <div class="cross" aria-hidden="true">!</div>
+      <h1>Not connected</h1>
+      <p class="msg" id="badText">Something went wrong. Please try again from Danglio → Follower charm.</p>
+      <a class="btn" href="danglio://followers">Back to Danglio</a>
+    </div>
+  </main>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (q.get("ok") === "1") {
+        document.getElementById("ok").hidden = false;
+        var u = (q.get("u") || "").replace(/[^A-Za-z0-9._]/g, "").slice(0, 30);
+        if (u) document.getElementById("okText").textContent = "@" + u + " is connected. Your follower count will appear under your charm in a moment.";
+        // Bring Danglio forward so it checks straight away.
+        setTimeout(function () { location.href = "danglio://followers"; }, 600);
+        return;
+      }
+      var reasons = {
+        denied: "You chose not to allow it. Nothing was connected.",
+        expired: "That took too long. Please start again from Danglio → Follower charm.",
+        not_ready: "Instagram isn't available in Danglio yet. Please try again later.",
+        failed: "Instagram didn't let us connect. Only Creator and Business accounts can be connected. You can switch for free in the Instagram app: Settings → Account type and tools."
+      };
+      document.getElementById("bad").hidden = false;
+      var r = q.get("error");
+      if (reasons[r]) document.getElementById("badText").textContent = reasons[r];
+    })();
+  </script>
+</body>
+</html>
