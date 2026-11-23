@@ -72,6 +72,14 @@
       document.getElementById("bad").hidden = false;
       var r = q.get("error");
       if (reasons[r]) document.getElementById("badText").textContent = reasons[r];
+      // A small code for support (names and numbers only).
+      var why = (q.get("why") || "").replace(/[^A-Za-z0-9_,:.]/g, "").slice(0, 80);
+      if (why) {
+        var note = document.createElement("p");
+        note.textContent = "Code: " + (r || "") + " · " + why;
+        note.style.cssText = "margin-top:12px;font-size:12px;color:#9a8f86";
+        document.getElementById("badText").after(note);
+      }
     })();
   </script>
 </body>
