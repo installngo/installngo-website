@@ -44,9 +44,9 @@
   <main class="wrap">
     <article class="doc">
       <h1>Privacy policy</h1>
-      <p class="updated">Last updated: <time datetime="2026-10-24">24 October 2026</time></p>
+      <p class="updated">Last updated: <time datetime="2026-11-23">23 November 2026</time></p>
       <div class="summary">
-        <p><strong>In short:</strong> Danglio for Windows and Android works without an account. It keeps an anonymous id for each device and, unless you switch it off, sends the app version, the system (Windows or Android) and the language setting once a day. If you choose to sign in, we get your email, and the name and country you give us. Your wallpaper photo never leaves your phone, and photos you turn into charms never leave your computer. We don't show ads, sell data, track you across apps, or collect IP addresses in the app.</p>
+        <p><strong>In short:</strong> Danglio for Windows and Android works without an account. It keeps an anonymous id for each device and, unless you switch it off, sends the app version, the system (Windows or Android) and the language setting once a day. If you choose to sign in, we get your email, and the name and country you give us. Your wallpaper photo never leaves your phone, and photos you turn into charms never leave your computer. If you use the Follower charm, we look up the public numbers of the YouTube channel or Instagram account you choose (see below). We don't show ads, sell data, track you across apps, or collect IP addresses in the app.</p>
       </div>
 
       <h2>1. Who is responsible</h2>
@@ -73,6 +73,13 @@
 
       <p><strong>Create with AI and Share (Windows and Mac):</strong> when you make a photo charm, you make the picture yourself in ChatGPT or Gemini; Danglio only opens that website for you, and what you share there is handled by OpenAI or Google under their own privacy policies. The picture you upload into Danglio is processed on your computer (the background is removed there) and the charm is kept only on your computer, in Danglio's own folder. It is never uploaded to us, and it is deleted when you delete the charm or uninstall Danglio. Stickers, status pictures and wallpapers made with <strong>Share</strong> are drawn on your computer and saved where you choose (Pictures → Danglio); nothing is sent to us.</p>
 
+      <h3 id="follower-charm">Follower charm (Windows and Mac)</h3>
+      <p>The Follower charm shows the follower count of a YouTube channel or Instagram account next to your desktop clock. It is off until you switch it on.</p>
+      <p><strong>YouTube.</strong> Danglio uses the <strong>YouTube API Services</strong>. You type a channel's handle (for example @yourchannel); Danglio sends it with the install id to our server, which asks YouTube for that channel's public details: its name, picture, subscriber count, view count and its latest video's title, picture and view, like and comment counts. Our server keeps these answers in memory for at most 15 minutes to save requests and does not store them in our database; Danglio keeps the latest numbers on your computer to show them. No Google sign-in is used and we get no access to your Google account. By using this part of Danglio you agree to the <a href="https://www.youtube.com/t/terms" rel="noopener" target="_blank">YouTube Terms of Service</a>, and Google handles YouTube data under the <a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google Privacy Policy</a>.</p>
+      <p><strong>Instagram.</strong> To show an Instagram Creator or Business account, you press <em>Connect Instagram</em> and log in on Meta's own page (Facebook or Instagram); you choose which account to share, and we never see your password. Meta gives our server an access key for that account, with permission to read its profile (<code>instagram_basic</code>). We use it only to read the username, profile picture, follower count and number of posts, about every 2 minutes while the Follower charm is on. We never read or send messages, post, comment, or look at your followers' details, even where Meta's screen lists more. Our server keeps, for your install id: the Instagram account id, username, access key, the latest follower and post counts, the picture's address, and when it was linked and last checked. The access key stays on our server and is never sent to the app. Meta handles your data under the <a href="https://privacycenter.instagram.com/policy" rel="noopener" target="_blank">Instagram Privacy Policy</a>.</p>
+      <p><strong>Pictures.</strong> Danglio downloads the channel's or account's picture (and YouTube's latest video picture) straight from YouTube or Instagram, which then see your computer's IP address, as when you visit their sites.</p>
+      <p id="instagram-delete"><strong>Disconnecting and deleting.</strong> In Danglio, open <em>Follower charm → Accounts</em> and press <em>Disconnect</em> on the Instagram card: we delete the link and its access key straight away. You can also remove Danglio in Instagram (Settings → Website permissions → Apps and websites) or in Meta Business Suite's settings, where connected apps are listed, after which the key stops working; or email us from below and we'll delete it within 7 days. Removing the YouTube channel in Danglio stops all YouTube lookups for it.</p>
+
       <h2>3. Payments</h2>
       <p>Payments are handled by <a href="https://razorpay.com/privacy/" rel="noopener" target="_blank">Razorpay</a>. Razorpay may ask for your phone number and email and collects your payment details under its own privacy policy. We receive the payment id, amount, status and the contact details Razorpay shares with the payment, and never your full card number, bank password or UPI PIN.</p>
 
@@ -90,7 +97,8 @@
         <li>an <strong>email delivery service</strong>: to send sign-in codes;</li>
         <li><strong>Microsoft</strong>: distributes the Windows app through the Microsoft Store under its own privacy statement;</li>
         <li><strong>Google</strong>: distributes the Android app through Google Play under its own privacy policy;</li>
-        <li><strong>Vercel</strong>: hosts this website.</li>
+        <li><strong>Vercel</strong>: hosts this website;</li>
+        <li><strong>Google (YouTube)</strong> and <strong>Meta (Instagram)</strong>: only if you use the Follower charm, to look up the channel or account you chose (see section 2).</li>
       </ul>
       <p>Some of these providers store data on servers outside India. We choose providers with strong security, and we'll share data with authorities only when the law requires it.</p>
 
@@ -100,12 +108,14 @@
         <li><strong>Install info:</strong> while the app is in use, and for up to 24 months after the device was last seen.</li>
         <li><strong>Purchase records:</strong> as long as Indian tax and accounting law requires (up to 8 years). After you delete your account they stay linked only to the anonymous install id, not to your email.</li>
         <li><strong>Messages to us:</strong> up to 2 years after your issue is closed.</li>
+        <li><strong>Follower charm:</strong> YouTube answers for at most 15 minutes on our server; an Instagram link and its access key until you disconnect it or ask us to delete it.</li>
       </ul>
 
       <h2 id="your-rights">8. Your rights</h2>
       <p>Under the DPDP Act you can ask us to tell you what personal data we hold about you, correct or update it, or erase it, and you can withdraw your consent. You can also nominate someone to exercise these rights for you.</p>
       <ul>
         <li><strong>Delete your account yourself:</strong> in the app (Windows: Settings → Account; Android: More → Account) choose <em>Delete my account</em>. We confirm it with a code sent to your email, then remove your email address, name and country and unlink all your devices.</li>
+        <li><strong>Disconnect Instagram:</strong> see <a href="#instagram-delete">Disconnecting and deleting</a> above.</li>
         <li><strong>Stop install info:</strong> switch off <em>Share anonymous install info</em> (Windows: Settings → Privacy; Android: More → Privacy).</li>
         <li id="delete-account"><strong>Delete without the app, or anything else:</strong> email <a href="mailto:installngo.official@gmail.com">installngo.official@gmail.com</a> from the address on your account.</li>
       </ul>
